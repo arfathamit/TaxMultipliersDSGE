@@ -146,13 +146,6 @@ kbar = (alfa/(1-alfa))*(wbar/r_k_bar)*lbar;
 ybar = (kbar^alfa)*(lbar^(1-alfa));
 
 
-// Steady-state overrides (computed numerically using python, more stable) 
-//rbar    = ;
-//r_k_bar = ;
-//wbar    = ;
-//ybar    = ;
-//mc_bar  = ;
-
 
 /***************************************************************/
 /* Model */
@@ -228,8 +221,6 @@ x = (gamma_x)*((tau_c*c) + ((tau_l*l*w)/p) + (b/p) + (tau_k*r_k*v*k(-1)) + ((tau
 
 // 13. Taylor Rule for monetary authority (Eq. 1.82)
 // NOTE: // Replaced r(+1) with r (standard inertial timing) to avoid making the policy instrument forward-looking and to improve BK determinacy/numerical stability.
-// r(+1) = max(((1/betta)*((1+((p-p(-1))/p(-1)))^phi_1)*((y/ybar)^phi_2)*(((1+r)/(1+rbar))^rho_r)-1)/(1-tau_i),0) ;
-// r(+1) = ((1/betta)*((1+((p-p(-1))/p(-1)))^phi_1)*((y/ybar)^phi_2)*(((1+r)/(1+rbar))^rho_r)-1)/(1-tau_i) ;
 r = ((1/betta)*((p/p(-1))^phi_1)*((y/ybar)^phi_2)*(((1+r(-1))/(1+rbar))^rho_r)-1)/(1-tau_i) ;
 
 // 14. Int. goods producer FOC, effective capital demand (Eq. 1.64)
@@ -247,14 +238,10 @@ mc = ((w^(1-alfa))*(r_k^alfa))/(p*exp(z)*(alfa^alfa)*((1-alfa)^(1-alfa))) ;
 // 17. Int. goods producer optimal reset price under Calvo pricing (paper Eq. (1.75)–(1.76))
 // NOTE: The paper expresses the optimal reset price p_star as a ratio of two infinite discounted sums (a numerator with marginal costs and a denominator with demand/discounting terms).
 // NOTE: We implement those infinite sums in recursive form for Dynare: A_p is the numerator recursion and B_p is the denominator recursion, so p_star is pinned down by their ratio (scaled by the desired markup term (1+lambda_p)).
+// NOTE: When solving the full nonlinear model at order=2, hard-coding a first-order approximation inside the equilibrium conditions can distort second derivatives and make higher-order dynamics unstable. For order>=2, prefer the nonlinear Calvo implementation via the A_p and B_p recursions; keep these approximations only as commented reference.
 A_p = (lambda*mc*y*(p^((1+lambda_p)/lambda_p))) + (betta*theta*A_p(+1));
 B_p = (lambda*y*(p^((1+lambda_p)/lambda_p - 1))) + (betta*theta*B_p(+1));
 p_star = (1+lambda_p)*(A_p/B_p);
-// NOTE: The lines below are ad hoc log-linear-style approximations of the Calvo reset-price condition (paper Eq. (1.77)–type objects) written directly in levels. When solving the full nonlinear model at order=2, hard-coding a first-order approximation inside the equilibrium conditions can distort second derivatives and make higher-order dynamics unstable.
-// NOTE: For order>=2, prefer the nonlinear Calvo implementation via the A_p and B_p recursions; keep these approximations only as commented reference.
-// p_star = (((1+lambda_bar_p)*mc_bar*(1-(betta*theta)))*(((mc-mc_bar)/mc_bar)+((p-1)/1)+((lambda_bar_p/(1+lambda_bar_p))*((lambda_p-lambda_bar_p)/lambda_bar_p)))) + (betta*theta*p_star(+1)) ;
-// p_star = ((((1+lambda_bar_p)*mc_bar*(1-(betta*theta)))/(1-((1-lambda_bar_p)*mc_bar*(1-(betta*theta))*(1-theta))))*(((mc-mc_bar)/mc_bar)+((theta*p(-1))-1)+((lambda_bar_p/(1+lambda_bar_p))*((lambda_p-lambda_bar_p)/lambda_bar_p)))) + (betta*theta*p_star(+1)) ;
-
 
 // 18. Int. goods producer profit function (Eq. 1.62)
 // NOTE: Dividend definition uses the Calvo aggregation logic, separating non-adjusters priced at p(-1), from adjusters priced at p_star, with demand weights implied by the CES aggregator.
