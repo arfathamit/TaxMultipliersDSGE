@@ -48,7 +48,7 @@ INS = { 'Government spending', 'eps_g',    'g',        +1, +1, 'Govt spending'
         'Capital tax',         'eps_k',    'rev_k',    -1, -1, 'Capital tax'
         'Consumption tax',     'eps_c',    'rev_c',    -1, -1, 'Consumption tax'
         'ITC',                 'eps_ic',   'spend_ic', +1, +1, 'ITC'
-        'Expensing',           'eps_etau', 'rev_k',    -1, +1, 'Expensing rate' };
+        'Expensing',           'eps_etau', 'spend_etau',+1, +1, 'Expensing rate' };
 
 % variable, label, scale type ('pct' = 100*dx/xss, 'app' = 400*dx)
 VARS = { 'y',  'Output',        'pct'

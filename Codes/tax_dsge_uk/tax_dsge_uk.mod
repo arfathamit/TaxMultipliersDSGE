@@ -30,7 +30,7 @@
 // /* Preamble                                                    */
 // /***************************************************************/
 //
-// /* Endogenous Variables (46 structural + 14 measurement = 60)  */
+// /* Endogenous Variables (48 structural + 14 measurement = 62)  */
 //
 // --- Macro aggregates ---
 // c        = private consumption
@@ -102,6 +102,8 @@
 // rev_i    = interest income tax revenue
 // rev_d    = dividend tax revenue
 // spend_ic = investment tax credit outlays
+// k_tau_etau = tax-basis change due to expensing relative to etau_ss
+// spend_etau = net expensing cost, including later depreciation recovery
 // rev_net  = net tax revenue (sum of revenues minus ITC outlays)
 //
 // --- Measurement variables (14) ---
@@ -239,7 +241,7 @@ var
     nu_c nu_g nu_i
     z d mu
     wtilde
-    rev_c rev_w rev_k rev_i rev_d spend_ic rev_net
+    rev_c rev_w rev_k rev_i rev_d spend_ic spend_etau k_tau_etau rev_net
     // Measurement variables (match data column names)
     chat ihat ghat pi_obs r_obs tau_k_hat tau_l_hat bhat
     trhat tau_c_hat tau_d_hat tau_itc_hat e_tau_hat tau_i_hat
@@ -379,7 +381,7 @@ rho_etau = 0.90;
 
 
 // =====================================================================
-// MODEL (46 structural + 14 measurement = 60 equations)
+// MODEL (48 structural + 14 measurement = 62 equations)
 // =====================================================================
 // Model-local (#) variables recompute derived SS quantities at every
 // evaluation, so they update when estimated parameters change during MCMC.
@@ -586,6 +588,14 @@ model;
     rev_i    = tau_i*(R(-1) - 1)*b(-1)/pi;
     rev_d    = tau_d*div;
     spend_ic = tau_ic*i;
+    // Reporting only: compare with etau_ss on the SAME investment path.
+    // Extra expensing lowers basis; later lost deductions recover revenue.
+    k_tau_etau = (1 - delta_tau)*k_tau_etau(-1)
+                 - (e_tau - etau_ss)*i;
+    spend_etau = tau_k*((e_tau - etau_ss)*i
+                       + delta_tau*k_tau_etau(-1));
+    // This net cost is already reflected in rev_k and the government budget.
+    // Do not subtract spend_etau again from rev_net.
     rev_net  = rev_c + rev_w + rev_k + rev_i + rev_d - spend_ic;
 
     // (46-58) Measurement equations
@@ -698,6 +708,8 @@ steady_state_model;
     rev_i = taui_ss*(R_ss_v - 1)*b_ss_v/pi_ss;
     rev_d = taud_ss*div_ss_v;
     spend_ic = tauic_ss*I_ss_v;
+    k_tau_etau = 0;
+    spend_etau = 0;
     rev_net = tauc_ss*C_ss_v + tauw_ss*w_ss_v*h_ss
             + tauk_ss*(rk_ss_v*K_ss_v - delta_tau*k_tau_ss_v - etau_ss*I_ss_v)
             + taui_ss*(R_ss_v - 1)*b_ss_v/pi_ss + taud_ss*div_ss_v - tauic_ss*I_ss_v;
@@ -862,7 +874,7 @@ estimation(
     irf          = 40,
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 */
 
 
@@ -889,7 +901,7 @@ estimation(
     irf          = 40,
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 */
  
  
@@ -914,7 +926,7 @@ estimation(
     mode_compute = 6,   // 4 is csminwel, 6 is Monte Carlo based
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 */
 
 
@@ -948,7 +960,7 @@ estimation(
     mode_file    = tax_dsge_est_mode_from_chains,
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 */
 
  
@@ -980,7 +992,7 @@ estimation(
     nograph,
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 @#endif
 
 @#if STAGE == 2
@@ -997,7 +1009,7 @@ estimation(
     nograph,
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 @#endif
 
 // ---------------------------------------------------------------------
@@ -1018,5 +1030,5 @@ estimation(
     nograph,
     nodisplay
 ) y c i h pi R g tr div taxrev
-  rev_c rev_w rev_k rev_d rev_i spend_ic;
+  rev_c rev_w rev_k rev_d rev_i spend_ic spend_etau;
 @#endif

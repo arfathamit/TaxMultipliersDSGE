@@ -69,7 +69,7 @@ INS = { 'Govt spending',   'eps_g',   'g',        +1
         'Consumption tax', 'eps_c',   'rev_c',    -1
         'ITC',             'eps_ic',  'spend_ic', +1
         'Dividend tax',    'eps_td',  'rev_d',    -1
-        'Expensing rate',  'eps_etau','rev_k',    -1 };
+        'Expensing rate',  'eps_etau','spend_etau',+1 };
 nI = size(INS,1); nH = numel(H);
 si = zeros(nI,1); vi = zeros(nI,1);
 for j = 1:nI
