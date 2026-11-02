@@ -64,3 +64,12 @@ In capital-goods models, investment expenditure is `PI * i`. A rise in expensing
 These reporting equations do not change `k_tau`, `rev_k`, or the government budget, which already account for expensing and depreciation. The total-revenue robustness calculation retains full revenue accounting. Numerator and denominator are both cumulated through the reported horizon; recovery after that horizon is not included.
 
 Existing CSV tables and saved figures use the previous expensing denominator and must be regenerated with `compute_multipliers`, `post_estimation`, and `make_paper_figures`. Existing parameter draws can be reused; re-estimation is not required.
+
+
+## Self-financing tax cuts and incentives
+
+A tax cut, ITC increase, or expensing increase is reported as `+Inf` when its discounted cumulative GDP response is positive and its discounted cumulative **total tax revenue** response is nonnegative. Zero is evaluated with a numerical tolerance of `1e-10` in model units. All changes are oriented in the expansionary policy direction, including reversing the simulated positive rate innovation for tax cuts. This is a reporting convention for a positive GDP gain with no net revenue loss, rather than the literal signed revenue-ratio value.
+
+The test uses total revenue even in the own-revenue and mechanical-cost tables; otherwise these tables retain their existing denominators. Spending and transfers are exempt. Classification is applied separately to every posterior draw, horizon, and sensitivity setting, before computing medians and intervals. Thus a subset of self-financing draws does not necessarily make the reported median infinite. Intentional infinities survive the finite-ratio clipping rule and are written as `Inf` in CSVs and console tables. Interpolated percentiles touching `+Inf` remain infinite. Figures mark infinite medians with triangles labeled `+Inf` and label unbounded intervals. Paired percentage changes involving infinite levels are undefined and use finite pairs only.
+
+Regenerate tables and figure data from the existing chains to apply this convention. Cached figure data from older reporting conventions cannot be replotted without recomputation. These changes affect reporting only and require no re-estimation. Run `addpath('Codes/tests'); test_fiscal_reporting` in MATLAB or Octave to check the reporting rules.

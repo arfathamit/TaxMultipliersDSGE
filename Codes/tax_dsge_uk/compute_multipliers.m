@@ -13,6 +13,9 @@
 %   denominator is the instrument's own revenue or outlay. This is the
 %   standard present-value convention in the fiscal multiplier literature
 %   and is the object reported in the main table.
+%   Reporting override (all tax normalizations): positive expansionary GDP
+%   with nonpositive total net revenue cost is +Inf, draw by draw.
+%   Spending and transfers retain their ordinary ratios.
 %
 % -------------------------------------------------------------------------
 % SECONDARY: MECHANICAL OWN-COST NORMALIZATION
@@ -68,6 +71,9 @@
 %   table_multipliers_mech.csv     -- secondary, matches the HANK paper
 %   table_multipliers_totalrev.csv -- robustness (includes Zubairy Panel C)
 % =========================================================================
+
+% Shared reporting helpers live in the parent Codes directory.
+addpath(fileparts(fileparts(mfilename('fullpath'))));
 
 if ~exist('M_','var') || ~exist('oo_','var') || ~exist('options_','var') || ~exist('estim_params_','var')
     error('Run Dynare first: dynare tax_dsge_uk noclearall -DSTAGE=5');
@@ -267,18 +273,26 @@ for d = 1:N_draws
 
             % --- MAIN: own revenue cumulated to the SAME horizon ---------
             pv_own = cumsum(disc .* irf(ins.vi, :)');
-            v_pv   = safe_ratio(pv_y, pv_own);
+            % Classify using TOTAL revenue, regardless of normalization.
+            % numsign also gives the expansionary shock direction: tax cuts
+            % reverse rate innovations; ITC and expensing increases do not.
+            net_cost = NaN(size(pv_y));
+            if ins.usetax
+                net_cost = -ins.numsign * cumsum(disc .* irf(vi_taxrev, :)');
+            end
+            v_pv = safe_ratio(pv_y, pv_own, net_cost);
 
             % --- ROBUSTNESS: total revenue (own outlay for spending) -----
             % ITC and expensing need the opposite numerator sign: their cost
             % rises with the instrument while total revenue falls.
-            pv_y_tot = (ins.totsign / ins.numsign) * pv_y;
             if ins.usetax
                 pv_den_tot = cumsum(disc .* irf(vi_taxrev, :)');
             else
                 pv_den_tot = pv_own;
             end
-            v_tot = safe_ratio(pv_y_tot, pv_den_tot);
+            % Orient both inputs as expansionary GDP gain and fiscal cost.
+            v_tot = safe_ratio(pv_y, ...
+                (ins.totsign / ins.numsign) * pv_den_tot, net_cost);
 
             % --- SECONDARY: mechanical own cost --------------------------
             % Base frozen at steady state; only the statutory rate moves.
@@ -304,7 +318,7 @@ for d = 1:N_draws
                     end
             end
             pv_mech = cumsum(disc .* mech_path);
-            v_mech  = safe_ratio(pv_y, pv_mech);
+            v_mech  = safe_ratio(pv_y, pv_mech, net_cost);
 
             m_pvown(d,j,:) = v_pv(H)';
             m_mech(d,j,:)  = v_mech(H)';
@@ -407,16 +421,17 @@ function k = idx_or_die(list, nm, what)
 end
 
 function [med, lo, hi] = summarize_block(X, clip_val)
-    X(abs(X) > clip_val) = NaN;
+    X = fiscal_reporting.clip(X, clip_val);
     nI = size(X,2); nH = size(X,3);
     med = NaN(nI,nH); lo = NaN(nI,nH); hi = NaN(nI,nH);
     for j = 1:nI
         for h = 1:nH
             c = X(:,j,h); c = c(~isnan(c));
             if ~isempty(c)
-                med(j,h) = median(c);
-                lo(j,h)  = prctile(c, 5);
-                hi(j,h)  = prctile(c, 95);
+                stats = fiscal_reporting.percentile(c, [50 5 95]);
+                med(j,h) = stats(1);
+                lo(j,h)  = stats(2);
+                hi(j,h)  = stats(3);
             end
         end
     end
@@ -515,8 +530,6 @@ function irf = compute_irf_simult(M_, options_, dr, ys, shock_idx, T)
     end
 end
 
-function out = safe_ratio(num, den)
-    out = NaN(size(num));
-    idx = abs(den) > 1e-10;
-    out(idx) = num(idx) ./ den(idx);
+function out = safe_ratio(num, den, net_cost)
+    out = fiscal_reporting.multiplier(num, den, net_cost);
 end
