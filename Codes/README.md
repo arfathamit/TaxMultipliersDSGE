@@ -49,3 +49,18 @@ make_paper_figures
 ```
 
 It reads the five sets of chains without modifying them, re-solves the model on the same 1,000 posterior draws used for the tables, and writes to `paper_figures\`: impulse responses for the baseline model, multipliers by horizon (baseline with bands, the four U.S. models, UK against U.S. AR(1)), and posterior summaries for every model. The log compares its medians with each folder's `table_multipliers_pvown.csv`. `make_paper_figures('plot')` redraws the figures from the saved results without re-solving.
+
+## Expensing multiplier denominator
+
+The expensing own-cost denominator measures net revenue lost relative to keeping `e_tau = etau_ss` on the same simulated investment and capital-tax-rate paths. The reporting state `k_tau_etau` tracks the difference in tax basis:
+
+```
+k_tau_etau = (1 - delta_tau) * k_tau_etau(-1) - (e_tau - etau_ss) * i
+spend_etau = tau_k * ((e_tau - etau_ss) * i + delta_tau * k_tau_etau(-1))
+```
+
+In capital-goods models, investment expenditure is `PI * i`. A rise in expensing creates a positive cost today and a negative tax-basis difference; smaller future depreciation deductions then recover revenue and reduce the net cost. This comparison excludes changes in taxable rental income and does not attribute changes in deductions from investment or capital tax rates alone to expensing. Both reporting variables are zero in steady state. To first order the main denominator depends on steady-state investment and capital tax rates, the simulated expensing path, and its accumulated effect on tax basis. The mechanical denominator uses the same recovery accounting with the instrument's AR(1) path, omitting endogenous fiscal feedback.
+
+These reporting equations do not change `k_tau`, `rev_k`, or the government budget, which already account for expensing and depreciation. The total-revenue robustness calculation retains full revenue accounting. Numerator and denominator are both cumulated through the reported horizon; recovery after that horizon is not included.
+
+Existing CSV tables and saved figures use the previous expensing denominator and must be regenerated with `compute_multipliers`, `post_estimation`, and `make_paper_figures`. Existing parameter draws can be reused; re-estimation is not required.

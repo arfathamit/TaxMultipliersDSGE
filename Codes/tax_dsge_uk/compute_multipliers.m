@@ -7,7 +7,7 @@
 % MAIN: PRESENT-VALUE OWN-REVENUE MULTIPLIER
 % -------------------------------------------------------------------------
 %     tax instruments:      -PV(dY, 0..H) / PV(d own_revenue, 0..H)
-%     spending and ITC:      PV(dY, 0..H) / PV(d own_outlay,  0..H)
+%     spending, ITC, expensing:      PV(dY, 0..H) / PV(d own_outlay,  0..H)
 %
 %   Numerator and denominator are cumulated to the SAME horizon H, and the
 %   denominator is the instrument's own revenue or outlay. This is the
@@ -28,8 +28,11 @@
 %   The rate path per unit innovation is rho^(t-1) under each instrument's
 %   own fiscal rule. Log rules (tau_k, tau_w, tau_c, tau_i, tau_d, g, tr)
 %   give d(revenue)_t = revenue_ss * rho^(t-1). Level rules (tau_ic,
-%   e_tau) give d(outlay)_t = I_ss * rho^(t-1) and
-%   d(rev_k)_t = -tauk_ss * I_ss * rho^(t-1) respectively.
+%   e_tau) give ITC outlays I_ss * rho^(t-1) and expensing deductions
+%   tauk_ss * I_ss * rho^(t-1). Expensing cost also subtracts the later
+%   revenue recovery from the smaller tax basis, at rate delta_tau.
+%   The mechanical rate path omits endogenous fiscal feedback; the main
+%   expensing denominator uses the simulated e_tau path instead.
 %
 % -------------------------------------------------------------------------
 % ROBUSTNESS: TOTAL-REVENUE NORMALIZATION  (previously the main method)
@@ -53,7 +56,8 @@
 %   eps_ic   -> spend_ic   (outlay)
 %   eps_ti   -> rev_i
 %   eps_td   -> rev_d
-%   eps_etau -> rev_k      (expensing operates through the capital tax base)
+%   eps_etau -> spend_etau (incremental expensing deductions less revenue
+%                            recovered from the resulting smaller tax basis)
 %
 % Usage:
 %   dynare tax_dsge_uk noclearall -DSTAGE=5
@@ -172,11 +176,11 @@ vi_taxrev = gv('taxrev');
 %   ownvar  : the instrument's own revenue or outlay series
 %   numsign : sign applied to PV(dY) so an expansionary action gives a
 %             positive multiplier.
-%               +1 for outlays (g, tr, ITC): dY and d(outlay) share a sign
+%               +1 for outlays (g, tr, ITC, expensing): same sign as dY
 %               -1 for tax rates: a rate increase raises revenue, lowers Y
 %   totsign : sign applied to PV(dY) in the TOTAL-REVENUE table. Usually
-%             equal to numsign, but the ITC differs: its own outlay
-%             (spend_ic) RISES with the instrument while total revenue
+%             equal to numsign, but ITC and expensing differ: their own outlay
+%             RISES with the instrument while total revenue
 %             FALLS, so the two denominators need opposite numerator signs.
 %   usetax  : true  -> total-revenue robustness uses PV(d taxrev)
 %             false -> total-revenue robustness uses the own outlay, since
@@ -186,7 +190,7 @@ vi_taxrev = gv('taxrev');
 %             mechanical rate path
 %   rule    : 'log'   -> d(own)_t = own_ss * rho^(t-1)
 %             'ic'    -> d(spend_ic)_t = I_ss * rho^(t-1)
-%             'etau'  -> d(rev_k)_t   = -tauk_ss * I_ss * rho^(t-1)
+%             'etau'  -> current expensing cost less depreciation recovery
 % -------------------------------------------------------------------------
 INS = struct('label',{},'panel',{},'shock',{},'ownvar',{},'numsign',{}, ...
              'totsign',{},'usetax',{},'rho',{},'rule',{});
@@ -201,7 +205,7 @@ INS(end+1) = mk('Consumption tax',  'B','eps_c',   'rev_c',    -1, -1,true ,'rho
 % Interest income tax exogenous and constant from 2026-10-22 (no eps_ti):
 % INS(end+1) = mk('Interest inc tax', 'B','eps_ti',  'rev_i',    -1, -1,true ,'rho_ti',  'log' );
 INS(end+1) = mk('Dividend tax',     'B','eps_td',  'rev_d',    -1, -1,true ,'rho_td',  'log' );
-INS(end+1) = mk('Expensing rate',   'B','eps_etau','rev_k',    -1, -1,true ,'rho_etau','etau');
+INS(end+1) = mk('Expensing rate',   'B','eps_etau','spend_etau',+1, -1,true ,'rho_etau','etau');
 
 nI = numel(INS);
 for j = 1:nI
@@ -212,6 +216,7 @@ end
 
 vi_i       = gv('i');
 ip_tauk_ss = idx_or_die(pnames_all, 'tauk_ss', 'parameter');
+ip_delta_tau = idx_or_die(pnames_all, 'delta_tau', 'parameter');
 
 %% ========================================================================
 %  STORAGE
@@ -265,7 +270,7 @@ for d = 1:N_draws
             v_pv   = safe_ratio(pv_y, pv_own);
 
             % --- ROBUSTNESS: total revenue (own outlay for spending) -----
-            % The ITC needs the opposite numerator sign here: its outlay
+            % ITC and expensing need the opposite numerator sign: their cost
             % rises with the instrument while total revenue falls.
             pv_y_tot = (ins.totsign / ins.numsign) * pv_y;
             if ins.usetax
@@ -285,7 +290,18 @@ for d = 1:N_draws
                 case 'ic'
                     mech_path = ys_draw(vi_i) * decay;
                 case 'etau'
-                    mech_path = -M_draw.params(ip_tauk_ss) * ys_draw(vi_i) * decay;
+                    % Tax-basis difference relative to unchanged expensing.
+                    % Lagged basis is negative after an expensing increase,
+                    % so its depreciation term reduces the net fiscal cost.
+                    delta_tax = M_draw.params(ip_delta_tau);
+                    basis_gap = 0;
+                    mech_path = zeros(T_irf, 1);
+                    for t = 1:T_irf
+                        deduction = ys_draw(vi_i) * decay(t);
+                        mech_path(t) = M_draw.params(ip_tauk_ss) ...
+                            * (deduction + delta_tax*basis_gap);
+                        basis_gap = (1 - delta_tax)*basis_gap - deduction;
+                    end
             end
             pv_mech = cumsum(disc .* mech_path);
             v_mech  = safe_ratio(pv_y, pv_mech);
