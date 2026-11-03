@@ -30,6 +30,8 @@ function make_paper_figures(what)
 
 if nargin < 1, what = 'all'; end
 C   = fileparts(mfilename('fullpath'));          % ...\Codes
+addpath(C);  % Shared +fiscal_reporting helpers.
+REPORTING_CONVENTION = 'positive-output-no-net-revenue-cost-inf-v1';
 OUT = fullfile(C, 'paper_figures');
 if ~exist(OUT, 'dir'), mkdir(OUT); end
 setappdata(0, 'PF_LOG', fullfile(OUT, 'log.txt'));
@@ -61,6 +63,9 @@ T = 40;
 
 if strcmp(what, 'plot')
     L = load(fullfile(OUT, 'fig_data.mat'));
+    if ~isfield(L,'REPORTING_CONVENTION') || ~strcmp(L.REPORTING_CONVENTION,REPORTING_CONVENTION)
+        error('Cached multiplier data use an older reporting convention. Run make_paper_figures without ''plot'' to recompute.');
+    end
     R = L.R;
 else
     R = [];
@@ -69,7 +74,7 @@ else
         if isempty(r), say('STOPPED: %s failed. Nothing plotted.', MODELS{m,1}); cd(C); return; end
         R = [R r]; %#ok<AGROW>
     end
-    save(fullfile(OUT, 'fig_data.mat'), 'R', 'MODELS', 'INS', 'VARS', 'T');
+    save(fullfile(OUT, 'fig_data.mat'), 'R', 'MODELS', 'INS', 'VARS', 'T', 'REPORTING_CONVENTION');
     write_paths(OUT, R, INS, T);
 end
 plot_all(OUT, R, INS, VARS, T);
@@ -183,8 +188,14 @@ try
                 yp = simult_(M_d, opt0, ys, dr, ex, 1);
                 if size(yp, 2) == T + 1, irf = yp(:, 2:end) - ys; else, irf = yp - ys; end
                 den = cumsum(disc .* irf(vo(j),:)');
-                mlt = INS{j,4} * cumsum(disc .* irf(iy,:)') ./ den;
-                mlt(abs(den) < 1e-10 | abs(mlt) > 50) = NaN;
+                output = INS{j,4} * cumsum(disc .* irf(iy,:)');
+                net_cost = NaN(size(output));
+                if ~ismember(INS{j,2},{'eps_g','eps_tr'})
+                    itaxrev = find(strcmp(vn,'taxrev'));
+                    net_cost = -INS{j,4} * cumsum(disc .* irf(itaxrev,:)');
+                end
+                mlt = fiscal_reporting.multiplier(output, den, net_cost);
+                mlt = fiscal_reporting.clip(mlt, 50);
                 MULT(d, j, :) = mlt;
                 sd = sqrt(M_d.Sigma_e(si(j), si(j)));
                 for v = 1:nV
@@ -204,9 +215,15 @@ try
     if sum(ok) < 0.9*N, error('only %d of %d draws solved', sum(ok), N); end
 
     r.folder = folder; r.label = spec{4}; r.have = have; r.nsolved = sum(ok);
-    r.mult_med = squeeze(median(MULT(ok,:,:), 1, 'omitnan'));
-    r.mult_lo  = squeeze(prctile(MULT(ok,:,:), 5, 1));
-    r.mult_hi  = squeeze(prctile(MULT(ok,:,:), 95, 1));
+    r.mult_med = NaN(nI,T); r.mult_lo = r.mult_med; r.mult_hi = r.mult_med;
+    for j = 1:nI
+        for hh = 1:T
+            stats = fiscal_reporting.percentile(MULT(ok,j,hh), [50 5 95]);
+            r.mult_med(j,hh) = stats(1);
+            r.mult_lo(j,hh) = stats(2);
+            r.mult_hi(j,hh) = stats(3);
+        end
+    end
     r.irf_med  = squeeze(median(IRF(ok,:,:,:), 1, 'omitnan'));
     r.irf_lo   = squeeze(prctile(IRF(ok,:,:,:), 5, 1));
     r.irf_hi   = squeeze(prctile(IRF(ok,:,:,:), 95, 1));
@@ -219,7 +236,9 @@ try
             row = Tt(Tt.Multiplier == INS{j,6} & Tt.Statistic == "median", :);
             if isempty(row), continue; end
             tab = [num(row.H1) num(row.H4) num(row.H12) num(row.H20)];
-            dd = abs(tab - r.mult_med(j, Hc)); if any(isnan(dd)), worst = NaN; break; end
+            actual = r.mult_med(j,Hc);
+            dd = abs(tab - actual);
+            dd(isinf(tab) & tab == actual) = 0; if any(isnan(dd)), worst = NaN; break; end
             worst = max(worst, max(dd));
         end
         say('  max |median - table| at H1/H4/H12/H20 = %.3f (table is rounded to 0.01)', worst);
@@ -277,7 +296,7 @@ k = 0;
 for j = find(main.have)'
     k = k + 1; subplot(2, 3, k);
     shade(t, main.mult_lo(j,:)', main.mult_hi(j,:)', band);
-    plot(t, main.mult_med(j,:)', '-', 'Color', COL(1,:), 'LineWidth', 1.6);
+    multiplier_line(t, main.mult_med(j,:)', '-', COL(1,:), 1.6);
     finish(INS{j,1}, T, k > 3, '');
 end
 savefig_png(f, fullfile(OUT, 'mult_main.png'));
@@ -289,7 +308,7 @@ for j = 1:size(INS, 1)
     ax = subplot(2, 3, j); hold on;
     for m = 1:4
         r = R(strcmp(fol, US{m}));
-        hh = plot(t, r.mult_med(j,:)', STY{m}, 'Color', COL(m,:), 'LineWidth', 1.5);
+        hh = multiplier_line(t, r.mult_med(j,:)', STY{m}, COL(m,:), 1.5);
         if j == 3, h(m) = hh; end
     end
     if j == 3, ax3 = ax; end
@@ -305,8 +324,8 @@ f = newfig(900, 560); k = 0;
 for j = find(uk.have)'
     k = k + 1; subplot(2, 3, k);
     shade(t, uk.mult_lo(j,:)', uk.mult_hi(j,:)', band);
-    h1 = plot(t, uk.mult_med(j,:)', '-', 'Color', COL(1,:), 'LineWidth', 1.6);
-    h2 = plot(t, us.mult_med(j,:)', '--', 'Color', [0 0 0], 'LineWidth', 1.3);
+    h1 = multiplier_line(t, uk.mult_med(j,:)', '-', COL(1,:), 1.6);
+    h2 = multiplier_line(t, us.mult_med(j,:)', '--', [0 0 0], 1.3);
     finish(INS{j,1}, T, k > 2, '');
     if k == 1, legend([h1 h2], {'UK', 'US AR(1)'}, 'Location', 'best', 'FontSize', 8); end
 end
@@ -319,7 +338,23 @@ f = figure('Position', [100 100 w h], 'Visible', 'off', 'Color', 'white', 'Paper
 end
 
 function shade(t, lo, hi, c)
-fill([t; flipud(t)], [lo; flipud(hi)], c, 'EdgeColor', 'none', 'FaceAlpha', 0.7); hold on;
+if any(isinf(lo) | isinf(hi))
+    setappdata(gca, 'InfiniteMultiplierBand', true);
+    unbounded = isinf(lo) | isinf(hi);
+    lo(unbounded) = NaN; hi(unbounded) = NaN;
+end
+% Draw finite runs separately so an unbounded interval does not erase the
+% finite part of the band on graphics backends that reject NaN polygons.
+good = isfinite(lo) & isfinite(hi);
+edges = diff([false; good(:); false]);
+starts = find(edges == 1); stops = find(edges == -1)-1;
+hold on;
+for k = 1:numel(starts)
+    ix = starts(k):stops(k);
+    if numel(ix) < 2, continue; end
+    fill([t(ix); flipud(t(ix))], [lo(ix); flipud(hi(ix))], c, ...
+        'EdgeColor', 'none', 'FaceAlpha', 0.7);
+end
 end
 
 function finish(ttl, T, bottom, ylab)
@@ -327,7 +362,39 @@ plot([1 T], [0 0], ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 0.6);
 title(ttl, 'FontSize', 10, 'FontWeight', 'bold');
 if bottom, xlabel('Quarters', 'FontSize', 9); end
 if ~isempty(ylab), ylabel(ylab, 'FontSize', 8); end
-xlim([1 T]); grid on; set(gca, 'FontSize', 8, 'Box', 'on'); hold off;
+xlim([1 T]); grid on; set(gca, 'FontSize', 8, 'Box', 'on');
+mark_infinite_multipliers();
+hold off;
+end
+
+function h = multiplier_line(t, values, style, color, width)
+infinite = isinf(values) & values > 0;
+values(infinite) = NaN;
+h = plot(t, values, style, 'Color', color, 'LineWidth', width);
+if any(infinite)
+    entries = getappdata(gca, 'InfiniteMultipliers');
+    if isempty(entries), entries = {}; end
+    entries{end+1} = struct('t',t(infinite),'color',color);
+    setappdata(gca, 'InfiniteMultipliers', entries);
+end
+end
+
+function mark_infinite_multipliers()
+entries = getappdata(gca, 'InfiniteMultipliers');
+if ~isempty(entries)
+    limits = ylim; top = limits(2)-0.06*diff(limits);
+    for k = 1:numel(entries)
+        plot(entries{k}.t, repmat(top,size(entries{k}.t)), '^', ...
+            'Color', entries{k}.color, 'MarkerSize', 4, 'HandleVisibility', 'off');
+    end
+    ylim(limits);
+    text(0.02,0.98,'Triangles: +Inf','Units','normalized', ...
+        'VerticalAlignment','top','FontSize',6,'Interpreter','none');
+end
+if isequal(getappdata(gca,'InfiniteMultiplierBand'),true)
+    text(0.02,0.87,'Interval reaches +Inf','Units','normalized', ...
+        'VerticalAlignment','top','FontSize',6,'Interpreter','none');
+end
 end
 
 function savefig_png(f, fn)

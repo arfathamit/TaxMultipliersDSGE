@@ -27,6 +27,9 @@
 %         post_raw.mat
 % =========================================================================
 
+% Shared reporting helpers live in the parent Codes directory.
+addpath(fileparts(fileparts(mfilename('fullpath'))));
+
 if ~exist('M_','var') || ~exist('oo_','var') || ~exist('options_','var') || ~exist('estim_params_','var')
     error('Run Dynare first: dynare tax_dsge_est noclearall -DSTAGE=5');
 end
@@ -78,6 +81,8 @@ for j = 1:nI
     si(j) = a; vi(j) = b;
 end
 ns = cell2mat(INS(:,4)); iy = fi(vn,'y'); iR = fi(vn,'R');
+itaxrev = fi(vn,'taxrev');
+is_tax = ~ismember(INS(:,2), {'eps_g','eps_tr'});
 
 % ----- draws: identical selection to compute_multipliers.m -----
 if isfield(options_,'mh_drop') && ~isempty(options_.mh_drop), mh_drop = options_.mh_drop; else, mh_drop = 0.333; end
@@ -94,7 +99,7 @@ sel = post(randperm(n_post, N_draws), :);
 fprintf('\npost_estimation: %d draws, %d settings, %d instruments, PHI_ZERO = %d\n', N_draws, nS, nI, PHI_ZERO);
 
 M_base = M_; oo_base = oo_; opt_base = options_;
-NUM = NaN(nS, N_draws, nI, nH);  DEN = NUM;  ok = false(nS, N_draws);
+NUM = NaN(nS, N_draws, nI, nH);  DEN = NUM; NET_COST = NUM;  ok = false(nS, N_draws);
 t0 = tic;
 for d = 1:N_draws
     M_d0 = set_all_parameters(sel(d,:)', estim_params_, M_base);
@@ -114,6 +119,10 @@ for d = 1:N_draws
                 pv_y = ns(j) * cumsum(disc .* irf(iy,:)');
                 pv_o = cumsum(disc .* irf(vi(j),:)');
                 NUM(e,d,j,:) = pv_y(H);  DEN(e,d,j,:) = pv_o(H);
+                if is_tax(j)
+                    net = -ns(j) * cumsum(disc .* irf(itaxrev,:)');
+                    NET_COST(e,d,j,:) = net(H);
+                end
             end
             ok(e,d) = true;
         catch
@@ -123,7 +132,8 @@ for d = 1:N_draws
 end
 M_ = M_base; oo_ = oo_base; options_ = opt_base;
 
-PV = NUM ./ DEN; PV(abs(DEN) < 1e-10) = NaN; PV(abs(PV) > clip_val) = NaN;
+PV = fiscal_reporting.multiplier(NUM, DEN, NET_COST);
+PV = fiscal_reporting.clip(PV, clip_val);
 both = all(ok,1);
 fprintf('\nSolved: %s of %d draws per setting; paired sample %d\n', mat2str(sum(ok,2)'), N_draws, sum(both));
 
@@ -137,7 +147,7 @@ for e = 1:nS
             for h = 1:nH
                 x = squeeze(PV(e,ok(e,:),j,h)); x = x(~isnan(x));
                 if isempty(x), continue; end
-                if st == 1, v(h) = median(x); elseif st == 2, v(h) = prctile(x,5); else, v(h) = prctile(x,95); end
+                probs = [50 5 95]; v(h) = fiscal_reporting.percentile(x, probs(st));
             end
             rows(end+1,:) = [{SET{e,1}, INS{j,1}, labs{st}}, num2cell(v)]; %#ok<AGROW>
         end
@@ -151,9 +161,11 @@ for e = 2:nS
     for j = 1:nI
         for h = 1:nH
             a = squeeze(PV(e,both,j,h)); b = squeeze(PV(1,both,j,h));
-            p = 100*(a./b - 1); p = p(isfinite(p));
+            % Percentage changes involving infinite levels are undefined.
+            paired = isfinite(a) & isfinite(b) & b ~= 0;
+            p = 100*(a(paired)./b(paired) - 1); p = p(isfinite(p));
             if isempty(p), m = NaN; lo = NaN; hi = NaN; else, m = median(p); lo = prctile(p,5); hi = prctile(p,95); end
-            rows(end+1,:) = {SET{e,1}, INS{j,1}, H(h), median(b,'omitnan'), median(a,'omitnan'), m, lo, hi}; %#ok<AGROW>
+            rows(end+1,:) = {SET{e,1}, INS{j,1}, H(h), fiscal_reporting.percentile(b,50), fiscal_reporting.percentile(a,50), m, lo, hi}; %#ok<AGROW>
         end
     end
 end
@@ -165,11 +177,11 @@ for hh = [3 4]
     for e = 1:nS, fprintf(' %9s', strtok(SET{e,1},' ')); end; fprintf('\n');
     for j = 1:nI
         fprintf('%-17s', INS{j,1});
-        for e = 1:nS, fprintf(' %9.3f', median(squeeze(PV(e,both,j,hh)),'omitnan')); end
+        for e = 1:nS, fprintf(' %9.3f', fiscal_reporting.percentile(squeeze(PV(e,both,j,hh)),50)); end
         fprintf('\n');
     end
 end
-save('post_raw.mat','SET','INS','H','NUM','DEN','ok','sel','PHI_ZERO');
+save('post_raw.mat','SET','INS','H','NUM','DEN','NET_COST','ok','sel','PHI_ZERO');
 fprintf('\nSaved post_pvown.csv, post_paired.csv, post_raw.mat  (%.1f min)\n', toc(t0)/60);
 
 % -------------------------------------------------------------------------

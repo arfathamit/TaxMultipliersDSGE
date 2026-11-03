@@ -18,7 +18,6 @@ pdftex}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{harvard}
 \usepackage{setspace}
 \usepackage{float,graphicx,color}
 \usepackage{appendix}
@@ -28,7 +27,8 @@ pdftex}
 \newtheorem*{thm}{Theorem}
 \theoremstyle{definition}
 \numberwithin{equation}{section}
-\newcommand{\cn}{\citeasnoun} % shortens command to cite as noun
+\usepackage{natbib}
+\newcommand{\cn}{\citet}
 \newcommand\ve{\varepsilon}
 
 
@@ -61,29 +61,31 @@ pdftex}
 
 
 \begin{abstract}
-This paper estimates fiscal multipliers for a broad set of tax instruments in a medium-scale DSGE model. The model includes labor, capital, consumption, and dividend taxes, an investment tax credit, and immediate expensing, and we estimate it with Bayesian methods on U.S.\ data from 1961 to 2013. Instruments that lower the cost of capital have the largest multipliers: per dollar of forgone revenue, a cut in the capital income tax raises the present value of output by about 2.8 dollars over three years, and the investment tax credit by about 2.2 dollars. Cuts to labor and consumption taxes have smaller multipliers, and the consumption tax multiplier is small at every horizon. When the resulting debt is repaid partly through distortionary taxes, several multipliers turn negative within five years; under fiscal rules in which only transfers respond to debt, they stay positive. Allowing the price of capital goods to rise with investment lowers the investment tax credit multiplier by about a quarter. Estimates for the United Kingdom, under fiscal rules in which only transfers respond to debt, are broadly similar to the corresponding U.S.\ estimates.
+This paper estimates fiscal multipliers for a broad set of tax instruments in a medium-scale DSGE model. The model includes labor, capital, consumption, and dividend taxes, an investment tax credit, and expensing of investment. We estimate the model with Bayesian methods on U.S.\ data from 1961 to 2013. Instruments that lower the cost of capital have the largest multipliers: per dollar of forgone revenue, a cut in the capital income tax raises the present value of output by about 2.8 dollars over three years, and the investment tax credit by about 2.2 dollars. Cuts to labor and consumption taxes have smaller multipliers, and the consumption tax multiplier is small at every horizon. When the resulting debt is repaid partly through distortionary taxes, several multipliers turn negative within five years; under fiscal rules in which only transfers respond to debt, they stay positive; highlighting the importance of fiscal feedback in determining the effectiveness of tax policies. Allowing the price of capital goods to rise with investment lowers the investment tax credit multiplier by about a quarter. Estimates for the United Kingdom, under fiscal rules in which only transfers respond to debt, are broadly similar to the corresponding U.S.\ estimates.
 \end{abstract}
 
 
-%\section{Introduction}
-%\label{sec:intro}
+\section{Introduction}
+\label{sec:intro}
 
 
-We study tax multipliers associated with taxes that directly stimulate private consumption spending or investment such as consumption taxes and investment tax credits.  Consumption taxes have long been favored by tax economists for their relative efficiency vis-a-vis taxes on capital and labor.  This paper attempts to argue that consumption taxes should also be favored by macroeconomists for their stabilization properties.  Cuts to consumption taxes can quickly and effectively stimulate aggregate demand. The following analysis studies the quantitative impact of tax cuts in a dynamic stochastic general equilibrium (DSGE) model.  In addition to consumption taxes, the model nests other tax policies, such as investment tax credits and changes to expensing and depreciation policies.  These policies target investment by lowering the after-tax cost of capital.  Historically, such instruments have been used by the U.S. to provide counter-cyclical fiscal policy (e.g. the Economic Recovery Act of 1981 increased the ability of businesses to take advantage of the investment tax credit).  Despite their use, such policies have not been studied in a DSGE environment.
+We study tax multipliers including those associated with taxes that directly stimulate private consumption spending or investment such as consumption taxes and investment tax credits.  Consumption taxes have long supported by economists for their relative efficiency vis-a-vis taxes on capital and labor (\citep{Correia2010}, \citep{DS2023}).  This paper looks at the stabilization properties on consumption taxes, as well as other tax instruments, such as investment tax credits and changes to expensing and depreciation policies.  These policies target investment by lowering the after-tax cost of capital.  Historically, such instruments have been used by the U.S. to provide counter-cyclical fiscal policy (e.g. the Economic Recovery Act of 1981 increased the ability of businesses to take advantage of the investment tax credit).  Despite their use, such policies have not been studied in a DSGE environment.
 
-The goal of this paper is to study specific tax policies in a DSGE environment.  A number of researchers have used DSGE models to study the government spending multiplier (e.g., \cn{CER2010}), but less work has been done on tax multipliers.  Those who provide insights on tax multipliers (e.g., \cn{Zubairy2014}, \cn{IMF2010}) focus on multipliers associated with broad taxes on capital and labor income.  Such tax cuts are generally not the most effective counter-cyclical policies.  We are the first to provide quantitative insights into the the size of the multipliers associated with tax cuts that directly target consumption and investment.
+A number of researchers have used DSGE models to study the government spending multiplier (e.g., \citet{CER2010}), but less work has been done on tax multipliers.  Those who provide insights on tax multipliers (e.g., \citet{Zubairy2014}, \citet{IMF2010}) focus on multipliers associated with broad taxes on capital and labor income.
 
-Some related work to mention:
-\begin{enumerate}
-\item \cn{IMF2010} shows impulse response functions to a consumption tax cut.  This paper seems to find that consumption taxes do well compared to other taxes and transfers, but don't do as well as gov't consumption and gov't investment
-\item \cn{LPT2010} have consumption taxes, but don't allow them to vary with gov't debt
-\item \cn{Zubairy2014} doesn't not have consumption taxes, only capital and labor income taxes.  Says few even have distortionary taxes in models of multipliers.
-\item \cn{TY2010} allow for consumption taxes and allow them to vary.  Not answering the same question as I want, but good to look at what they say about consumption taxes.  In particular, how with cons taxes the consumer and producer price index will vary and what crowding out happens with consumption tax changes.
-\item \cn{SC2005} have consumption taxes, but don't use them as a policy instrument.  They don't say anything interesting about consumption taxes.
-\item \cn{CER2010} don't have consumption taxes and only focus on spending multipliers.  I don't even think they have taxes.  Fiscal and monetary policy rules look simple though- might want to take these.
-\end{enumerate}
+% Some related work to mention:
+% \begin{enumerate}
+% \item \citet{IMF2010} shows impulse response functions to a consumption tax cut.  This paper seems to find that consumption taxes do well compared to other taxes and transfers, but don't do as well as gov't consumption and gov't investment
+% \item \citet{LPT2010} have consumption taxes, but don't allow them to vary with gov't debt
+% \item \citet{Zubairy2014} doesn't not have consumption taxes, only capital and labor income taxes.  Says few even have distortionary taxes in models of multipliers.
+% \item \citet{TY2010} allow for consumption taxes and allow them to vary.  Not answering the same question as I want, but good to look at what they say about consumption taxes.  In particular, how with cons taxes the consumer and producer price index will vary and what crowding out happens with consumption tax changes.
+% \item \citet{SC2005} have consumption taxes, but don't use them as a policy instrument.  They don't say anything interesting about consumption taxes.
+% \item \citet{CER2010} don't have consumption taxes and only focus on spending multipliers.  I don't even think they have taxes.  Fiscal and monetary policy rules look simple though- might want to take these.
+% \end{enumerate}
 
-In our baseline model every fiscal instrument follows a rule that responds to lagged debt and output. Three findings stand out. First, the instruments that act directly on the cost of capital, the capital income tax and the investment tax credit, have the largest multipliers at every horizon beyond the first year. Second, the consumption tax multiplier is small, which seems to reflect that in a representative-agent model the consumption tax works only through the consumption-leisure margin. Third, how the debt created by a tax cut is financed matters a great deal at longer horizons: with debt repaid partly through distortionary taxes, the spending, consumption tax, and expensing multipliers turn negative after three to four years, while under fiscal rules in which only lump-sum transfers respond to debt they remain positive. We also show that a capital-goods supply friction in the spirit of \cn{House_Shapiro_2008} mainly lowers the multipliers of the investment incentives, and we report estimates for the United Kingdom.
+In order to compare to the past literature on tax multipliers, we use a standard DSGE framework and solution method. Our only changes to the standard approach are to include additional tax instruments: consumption taxes, the investment tax credit, and capital cost recovery rules. In our baseline model every fiscal instrument follows a rule that responds to lagged debt and output.
+
+Three findings from our study stand out. First, the instruments that act directly on the cost of capital, the capital income tax and the investment tax credit, have the largest multipliers at every horizon beyond the first year. Second, the consumption tax multiplier is small, which seems to reflect that in a representative-agent model the consumption tax works only through the consumption-leisure margin. Third, how the increase in debt associated with a tax cut is financed matters a great deal at longer horizons: with debt repaid partly through distortionary taxes, the spending, consumption tax, and expensing multipliers turn negative after three to four years, while under fiscal rules in which only lump-sum transfers respond to debt they remain positive. We also show that a capital-goods supply friction in the spirit of \citet{House_Shapiro_2008} mainly lowers the multipliers of the investment incentives, and we report estimates for the United Kingdom.
 
 The remainder of the paper is organized as follows.  Section \ref{sec:model} describes the model.  Section \ref{sec:calibration} describes the calibration and estimation strategy we use to identify parameter values.  Section \ref{sec:results} presents the results. Section \ref{sec:financing} compares alternative fiscal rules and the capital-goods friction, and Section \ref{sec:sens_params} reports the sensitivity to calibrated parameters.  Section \ref{sec:conclusion} concludes. The appendix reports the estimates under alternative specifications and for the United Kingdom.
 
@@ -95,7 +97,7 @@ The economy is populated by a continuum of identical households. Each household 
 \begin{equation}\label{eq:utility}
 E_{0}\sum_{t=0}^{\infty}\beta^{t} d_t \left\{ \frac{\left[x_{c,t}^{a}(1-h_{t})^{1-a}\right]^{1-\gamma}}{1-\gamma} + V(x_{g,t}) \right\}
 \end{equation}
-where $\beta \in (0,1)$ is the discount factor, $d_t$ is an intertemporal preference shock, $\gamma$ is the coefficient of relative risk aversion, and $a \in (0,1)$ is the consumption expenditure share calibrated at the steady state. Utility over government consumption $V(x_{g,t})$ is separable from private utility, so government spending does not directly affect the marginal utility of private consumption or leisure. Following \cn{Zubairy2014}, the model incorporates deep habit formation in both private and government consumption as in \cn{RSU2006}, which generates counter-cyclical markups and allows private consumption to rise in response to a government spending shock.
+where $\beta \in (0,1)$ is the discount factor, $d_t$ is an intertemporal preference shock, $\gamma$ is the coefficient of relative risk aversion, and $a \in (0,1)$ is the consumption expenditure share calibrated at the steady state. Utility over government consumption $V(x_{g,t})$ is separable from private utility, so government spending does not directly affect the marginal utility of private consumption or leisure. Following \citet{Zubairy2014}, the model incorporates deep habit formation in both private and government consumption as in \citet{RSU2006}, which generates counter-cyclical markups and allows private consumption to rise in response to a government spending shock.
 
 The habit-adjusted consumption surpluses are:
 \begin{align}
@@ -122,7 +124,7 @@ Physical capital accumulates according to:
 \begin{equation}\label{eq:kacc}
 k_{t} = (1-\delta)k_{t-1} + i_{t}\left[1-S\!\left(\frac{\mu_t i_{t}}{i_{t-1}}\right)\right]
 \end{equation}
-where $\delta$ is the constant economic depreciation rate and $\mu_t$ is a stochastic investment efficiency shock. Following \cn{SW2003} and \cn{Zubairy2014}, the investment adjustment cost function takes the form $S\!\left(\frac{\mu_t i_t}{i_{t-1}}\right) = \frac{\kappa}{2}\!\left(\frac{\mu_t i_t}{i_{t-1}}-1\right)^2$, so that in the deterministic steady state $S = S' = 0$ and $S'' = \kappa > 0$.
+where $\delta$ is the constant economic depreciation rate and $\mu_t$ is a stochastic investment efficiency shock. Following \citet{SW2003} and \citet{Zubairy2014}, the investment adjustment cost function takes the form $S\!\left(\frac{\mu_t i_t}{i_{t-1}}\right) = \frac{\kappa}{2}\!\left(\frac{\mu_t i_t}{i_{t-1}}-1\right)^2$, so that in the deterministic steady state $S = S' = 0$ and $S'' = \kappa > 0$.
 
 The tax basis of the capital stock evolves as:
 \begin{equation}\label{eq:ktau}
@@ -148,13 +150,13 @@ The optimal utilization rate equates the after-tax marginal product of capital t
 \begin{equation}\label{eq:util}
 (1-\tau_{t}^{k})r_{t}^{k} = \gamma_1 u_{t}^{\sigma_u}
 \end{equation}
-where $\gamma_1 = (1-\tau_k^{ss})r_k^{ss}$ is pinned down at the steady state and $\sigma_u$ governs the convexity of the utilization cost function $a(u_t) = \frac{\gamma_1}{1+\sigma_u}(u_t^{1+\sigma_u}-1)$. Relative to \cn{Zubairy2014}, the term $\delta q_t \tau_t^k$ is absent from this condition because depreciation deductions are now tracked through the shadow value of the tax basis $v_{\tau,t}$ defined below, avoiding double-counting.
+where $\gamma_1 = (1-\tau_k^{ss})r_k^{ss}$ is pinned down at the steady state and $\sigma_u$ governs the convexity of the utilization cost function $a(u_t) = \frac{\gamma_1}{1+\sigma_u}(u_t^{1+\sigma_u}-1)$. Relative to \citet{Zubairy2014}, the term $\delta q_t \tau_t^k$ is absent from this condition because depreciation deductions are now tracked through the shadow value of the tax basis $v_{\tau,t}$ defined below, avoiding double-counting.
 
 The capital Euler equation governs the optimal capital stock:
 \begin{equation}\label{eq:capeuler}
 \lambda_t q_t = \beta E_t \lambda_{t+1} \left[(1-\tau_{t+1}^{k})r_{t+1}^{k}u_{t+1} - \frac{\gamma_1}{1+\sigma_u}\!\left(u_{t+1}^{1+\sigma_u}-1\right) + q_{t+1}(1-\delta)\right]
 \end{equation}
-where $q_t$ is Tobin's marginal $q$. Similarly, the term $\delta q_{t+1}\tau_{t+1}^k u_{t+1}$ present in \cn{Zubairy2014} is omitted here for the same reason.
+where $q_t$ is Tobin's marginal $q$. Similarly, the term $\delta q_{t+1}\tau_{t+1}^k u_{t+1}$ present in \citet{Zubairy2014} is omitted here for the same reason.
 
 The investment Euler equation governs the optimal investment decision:
 \begin{equation}\label{eq:inv}
@@ -170,7 +172,7 @@ Finally, the bond Euler equation is:
 \begin{equation}\label{eq:bondeuler}
 \lambda_t = \beta E_t \!\left[1+(R_t-1)(1-\tau_{t+1}^{i})\right]\frac{\lambda_{t+1}}{\pi_{t+1}}
 \end{equation}
-Only the interest earned $(R_t-1)$ on bond holdings is subject to the interest income tax $\tau_{t+1}^i$, so the relevant return is the after-tax net interest. This differs from \cn{Zubairy2014}, in which the pre-tax gross return $R_t$ governs the bond Euler.
+Only the interest earned $(R_t-1)$ on bond holdings is subject to the interest income tax $\tau_{t+1}^i$, so the relevant return is the after-tax net interest. This differs from \citet{Zubairy2014}, in which the pre-tax gross return $R_t$ governs the bond Euler.
 
 
 \subsection{Firms}
@@ -258,7 +260,7 @@ The six components are: consumption tax revenue ($\tau_t^c c_t$), labor income t
 
 \subsubsection*{Fiscal rules}
 
-Each fiscal instrument follows an autoregressive rule that allows feedback from lagged government debt and lagged output, following \cn{Zubairy2014}. Debt feedback ensures intertemporal fiscal solvency; output feedback captures automatic stabilizers. Because $g_t$ and $x_t$ are expenditures that the government cuts when debt is elevated, their debt-feedback coefficients enter with a negative sign. Tax rates carry a positive debt-feedback sign, rising to close the fiscal gap.
+Each fiscal instrument follows an autoregressive rule that allows feedback from lagged government debt and lagged output, following \citet{Zubairy2014}. Debt feedback ensures intertemporal fiscal solvency; output feedback captures automatic stabilizers. Because $g_t$ and $x_t$ are expenditures that the government cuts when debt is elevated, their debt-feedback coefficients enter with a negative sign. Tax rates carry a positive debt-feedback sign, rising to close the fiscal gap.
 
 Government purchases and lump-sum transfers follow:
 \begin{align}
@@ -266,7 +268,7 @@ Government purchases and lump-sum transfers follow:
 \log\!\left(\frac{x_t}{\bar{x}}\right) &= \rho_{x}\log\!\left(\frac{x_{t-1}}{\bar{x}}\right) - \rho_{x,b}\log\!\left(\frac{b_{t-1}}{\bar{b}}\right) + \rho_{x,y}\log\!\left(\frac{y_{t-1}}{\bar{y}}\right) + \varepsilon_t^{x} \label{eq:trrule}
 \end{align}
 
-The rules for the capital and labor income tax rates, which follow \cn{Zubairy2014}, are:
+The rules for the capital and labor income tax rates, which follow \citet{Zubairy2014}, are:
 \begin{align}
 \log\!\left(\frac{\tau_t^k}{\bar{\tau}^k}\right) &= \rho_k\log\!\left(\frac{\tau_{t-1}^k}{\bar{\tau}^k}\right) + \rho_{k,b}\log\!\left(\frac{b_{t-1}}{\bar{b}}\right) + \rho_{k,y}\log\!\left(\frac{y_{t-1}}{\bar{y}}\right) + \varepsilon_t^k \label{eq:taukrule} \\
 \log\!\left(\frac{\tau_t^w}{\bar{\tau}^w}\right) &= \rho_w\log\!\left(\frac{\tau_{t-1}^w}{\bar{\tau}^w}\right) + \rho_{w,b}\log\!\left(\frac{b_{t-1}}{\bar{b}}\right) + \rho_{w,y}\log\!\left(\frac{y_{t-1}}{\bar{y}}\right) + \phi\,\varepsilon_t^k + \varepsilon_t^w \label{eq:taukwrule}
@@ -297,7 +299,7 @@ The debt created by any shock is then repaid through lump-sum transfers alone, s
 
 \subsection{Monetary Authority}
 
-The monetary authority sets the gross nominal interest rate $R_t$ according to a Taylor rule with interest rate smoothing, following \cn{Zubairy2014}:
+The monetary authority sets the gross nominal interest rate $R_t$ according to a Taylor rule with interest rate smoothing, following \citet{Zubairy2014}:
 \begin{equation}\label{eq:taylor}
 \log\!\left(\frac{R_t}{\bar{R}}\right) = \alpha_R\log\!\left(\frac{R_{t-1}}{\bar{R}}\right) + (1-\alpha_R)\!\left[\alpha_\pi\log\!\left(\frac{\pi_t}{\bar{\pi}}\right) + \alpha_Y\log\!\left(\frac{y_t}{\bar{y}}\right)\right] + \varepsilon_t^m
 \end{equation}
@@ -306,7 +308,7 @@ where $\alpha_R \in (0,1)$ governs interest rate inertia, $\alpha_\pi > 1$ is th
 \subsection{Extension: Capital-Goods Supply Friction}
 \label{sec:kgoods}
 
-In the baseline model one unit of output can always be turned into one unit of investment, so the relative price of investment goods is fixed at one. \cn{House_Shapiro_2008} find that the supply of capital goods is not perfectly elastic in the short run, so that part of a temporary investment incentive is absorbed by a higher price of capital goods rather than a higher quantity. To capture this, we add a competitive capital-goods sector that turns final output into investment goods at a convex cost. Producing $i_t$ units of investment goods uses
+In the baseline model one unit of output can always be turned into one unit of investment, so the relative price of investment goods is fixed at one. \citet{House_Shapiro_2008} find that the supply of capital goods is not perfectly elastic in the short run, so that part of a temporary investment incentive is absorbed by a higher price of capital goods rather than a higher quantity. To capture this, we add a competitive capital-goods sector that turns final output into investment goods at a convex cost. Producing $i_t$ units of investment goods uses
 \begin{equation}\label{eq:kg_cost}
 \Xi_t = \bar{\Xi}\left(\frac{i_t}{\bar{\imath}}\right)^{1+1/\epsilon_K} + F_K
 \end{equation}
@@ -314,7 +316,7 @@ units of output, where $\epsilon_K > 0$ is the supply elasticity of capital good
 \begin{equation}\label{eq:kg_price}
 P^I_t = \left(\frac{i_t}{\bar{\imath}}\right)^{1/\epsilon_K}
 \end{equation}
-The constants $\bar{\Xi}$ and $F_K$ are set so that the sector earns zero profit in steady state and absorbs exactly $\bar{\imath}$ units of output there, so the steady state is identical to the baseline model and the friction matters only away from it. Households now pay $P^I_t$ per unit of investment: the left-hand side of the investment Euler equation \eqref{eq:inv} becomes $\lambda_t P^I_t(1-\tau_t^{ic}-\tau_t^k e_t^{\tau})$, the value of future depreciation deductions is $\lambda_t v_{\tau,t}(1-e_t^{\tau})P^I_t$, and the tax basis accumulates the purchase value, $k_t^{\tau} = (1-\delta^{\tau})k_{t-1}^{\tau} + P^I_t i_t (1-e_t^{\tau})$. The investment tax credit and expensing apply to the purchase value $P^I_t i_t$, $\Xi_t$ replaces $i_t$ in the resource constraint, and the sector's profits $P^I_t i_t - \Xi_t$ are paid to households as dividends. As $\epsilon_K \to \infty$ the model collapses to the baseline. We set $\epsilon_K = 4$, the smallest integer value at which the model has a unique stable equilibrium under our parameter values; \cn{House_Shapiro_2008} estimate values between about 6 and 14, so this is a strong version of the friction, and Section~\ref{sec:sens_params} reports results for larger values.
+The constants $\bar{\Xi}$ and $F_K$ are set so that the sector earns zero profit in steady state and absorbs exactly $\bar{\imath}$ units of output there, so the steady state is identical to the baseline model and the friction matters only away from it. Households now pay $P^I_t$ per unit of investment: the left-hand side of the investment Euler equation \eqref{eq:inv} becomes $\lambda_t P^I_t(1-\tau_t^{ic}-\tau_t^k e_t^{\tau})$, the value of future depreciation deductions is $\lambda_t v_{\tau,t}(1-e_t^{\tau})P^I_t$, and the tax basis accumulates the purchase value, $k_t^{\tau} = (1-\delta^{\tau})k_{t-1}^{\tau} + P^I_t i_t (1-e_t^{\tau})$. The investment tax credit and expensing apply to the purchase value $P^I_t i_t$, $\Xi_t$ replaces $i_t$ in the resource constraint, and the sector's profits $P^I_t i_t - \Xi_t$ are paid to households as dividends. As $\epsilon_K \to \infty$ the model collapses to the baseline. We set $\epsilon_K = 4$, the smallest integer value at which the model has a unique stable equilibrium under our parameter values; \citet{House_Shapiro_2008} estimate values between about 6 and 14, so this is a strong version of the friction, and Section~\ref{sec:sens_params} reports results for larger values.
 
 \subsection{Equilibrium}
 
@@ -395,22 +397,22 @@ Combining the likelihood with the prior distributions specified in Table~\ref{ta
 \begin{equation}\label{eq:posterior}
 \log p(\Theta \mid Z^T) = \log\mathcal{L}(Z^T \mid \Theta) + \log p(\Theta) + \text{const.}
 \end{equation}
-The posterior mode is located with Dynare's Newton-type optimizer (\texttt{mode\_compute = 5}). We sample the posterior with a Gaussian random-walk Metropolis-Hastings algorithm whose proposal covariance is taken from the posterior draws of a preliminary run rather than from the inverse Hessian at the mode, which in our experience gives a better-shaped proposal for a posterior of this size. We run four independent chains of 1{,}000{,}000 draws each and discard the first half of each chain as burn-in, leaving 2{,}000{,}000 retained draws. We judge convergence by the potential scale reduction factor of \cn{GelmanRubin1992} for every estimated parameter, the drift of the log posterior over the retained half of each chain, the agreement of the four chains, and the effective sample size of every parameter. For the baseline model the largest potential scale reduction factor across the 49 estimated parameters is 1.005, and every estimated model in the paper has a largest factor below 1.02. Impulse response functions and fiscal multipliers are computed from 1{,}000 draws taken at random from the retained posterior sample.
+The posterior mode is located with Dynare's Newton-type optimizer (\texttt{mode\_compute = 5}). We sample the posterior with a Gaussian random-walk Metropolis-Hastings algorithm whose proposal covariance is taken from the posterior draws of a preliminary run rather than from the inverse Hessian at the mode, which in our experience gives a better-shaped proposal for a posterior of this size. We run four independent chains of 1{,}000{,}000 draws each and discard the first half of each chain as burn-in, leaving 2{,}000{,}000 retained draws. We judge convergence by the potential scale reduction factor of \citet{GelmanRubin1992} for every estimated parameter, the drift of the log posterior over the retained half of each chain, the agreement of the four chains, and the effective sample size of every parameter. For the baseline model the largest potential scale reduction factor across the 49 estimated parameters is 1.005, and every estimated model in the paper has a largest factor below 1.02. Impulse response functions and fiscal multipliers are computed from 1{,}000 draws taken at random from the retained posterior sample.
 
 \subsection{Calibration and Estimation}
 \label{sec:calibration}
 
-The model's parameter vector is partitioned into two groups. A subset of parameters is \emph{calibrated}: fixed prior to estimation at values drawn from the literature or from long-run data targets, because they are weakly identified by the business-cycle observables used in estimation. The remaining parameters are \emph{estimated} via Bayesian methods using U.S.\ quarterly data, following \cn{Zubairy2014} and \cn{SW2003}, as described in Section~\ref{sec:solution}.
+The model's parameter vector is partitioned into two groups. A subset of parameters is \emph{calibrated}: fixed prior to estimation at values drawn from the literature or from long-run data targets, because they are weakly identified by the business-cycle observables used in estimation. The remaining parameters are \emph{estimated} via Bayesian methods using U.S.\ quarterly data, following \citet{Zubairy2014} and \citet{SW2003}, as described in Section~\ref{sec:solution}.
 
 \subsubsection{Calibrated Parameters}
 
 Table~\ref{tab:calib} reports the calibrated parameters. The discount factor $\beta$ is set to imply a 3\% annual real interest rate. The quarterly economic depreciation rate $\delta = 0.025$ corresponds to a standard 10\% annual rate. The capital income share $\theta = 0.30$ matches the average labor share of income in U.S.\ national accounts. The price elasticity of substitution $\eta = 5.3$ implies a steady-state markup of roughly 23\%, while the labor variety elasticity $\eta_w = 21.0$ is calibrated to match a 5\% steady-state wage markup consistent with the Rotemberg wage-setting framework.
 
-Four parameters are fixed before estimation because the data appear to say little about them. In a preliminary estimation with all four free, the posterior standard deviation was about as large as the prior standard deviation for the private habit persistence $\theta^c$ and the wage adjustment cost $\alpha_W$, and only somewhat smaller for the utilization curvature $\sigma_u$ and the government habit depth $b_g$, and these parameters traded off against each other along flat ridges of the posterior. We set $\theta^c = 0.53$, the posterior mean in \cn{Zubairy2014}; $\alpha_W = 100$, which corresponds to wage contracts lasting about four quarters under the usual mapping between Rotemberg and Calvo adjustment costs and equals the prior mean in \cn{Zubairy2014}; $\sigma_u = 2.5$, a conventional value that also equals her prior mean; and $b_g = 0.70$, her prior mean, which is close to the posterior median of our preliminary estimation. The multipliers barely move with $\alpha_W$ and move by roughly ten percent with $\theta^c$ over its posterior range. The capital tax multiplier depends on $\sigma_u$ and the spending multiplier on $b_g$, so Section~\ref{sec:sens_params} reports both across a range of values. The same values are used in every model we estimate.
+Four parameters are fixed before estimation because the data appear to say little about them. In a preliminary estimation with all four free, the posterior standard deviation was about as large as the prior standard deviation for the private habit persistence $\theta^c$ and the wage adjustment cost $\alpha_W$, and only somewhat smaller for the utilization curvature $\sigma_u$ and the government habit depth $b_g$, and these parameters traded off against each other along flat ridges of the posterior. We set $\theta^c = 0.53$, the posterior mean in \citet{Zubairy2014}; $\alpha_W = 100$, which corresponds to wage contracts lasting about four quarters under the usual mapping between Rotemberg and Calvo adjustment costs and equals the prior mean in \citet{Zubairy2014}; $\sigma_u = 2.5$, a conventional value that also equals her prior mean; and $b_g = 0.70$, her prior mean, which is close to the posterior median of our preliminary estimation. The multipliers barely move with $\alpha_W$ and move by roughly ten percent with $\theta^c$ over its posterior range. The capital tax multiplier depends on $\sigma_u$ and the spending multiplier on $b_g$, so Section~\ref{sec:sens_params} reports both across a range of values. The same values are used in every model we estimate.
 
-Steady-state hours worked $\bar{h} = 0.50$ normalizes the time endowment to unity and follows \cn{Zubairy2014}. The government spending share $\bar{g}/\bar{y} = 0.21$ and debt-to-output ratio $\bar{b}/\bar{y} = 0.32$ are set to the sample averages over 1961Q1--2013Q4. Steady-state inflation is normalized to $\bar{\pi} = 1$ (zero net inflation).
+Steady-state hours worked $\bar{h} = 0.50$ normalizes the time endowment to unity and follows \citet{Zubairy2014}. The government spending share $\bar{g}/\bar{y} = 0.21$ and debt-to-output ratio $\bar{b}/\bar{y} = 0.32$ are set to the sample averages over 1961Q1--2013Q4. Steady-state inflation is normalized to $\bar{\pi} = 1$ (zero net inflation).
 
-Steady-state tax rates are calibrated to the sample averages over the same period. The capital income tax $\bar{\tau}^k = 0.42$ and labor income tax $\bar{\tau}^w = 0.22$ follow the effective tax rate construction of \cn{Jones2002}. The consumption tax $\bar{\tau}^c = 0.06$ follows the construction of \cn{Mendoza_et_al_1994} and reflects the effective tax rate on private consumption expenditures. The interest income and dividend tax rates $\bar{\tau}^i = 0.25$ and $\bar{\tau}^d = 0.30$ are the sample averages of the interest and qualified dividend marginal tax rates from the McGrattan TAXSIM series; the interest income tax rate stays at this value throughout. The investment tax credit rate $\bar{\tau}^{ic} = 0.02$ and expensing rate $\bar{e}^{\tau} = 0.06$ are sample averages of the \cn{House_Shapiro_2008} ITC series and the BEA asset-weighted bonus depreciation series, respectively. The tax depreciation rate $\delta^{\tau} = 0.025$ equals the economic depreciation rate as a baseline. The dividend share of output $\overline{\text{div}}/\bar{y} = 0.05$ is set to the sample average; the fixed operating cost $\psi$ in the production function is determined residually to hit this target in steady state.
+Steady-state tax rates are calibrated to the sample averages over the same period. The capital income tax $\bar{\tau}^k = 0.42$ and labor income tax $\bar{\tau}^w = 0.22$ follow the effective tax rate construction of \citet{Jones2002}. The consumption tax $\bar{\tau}^c = 0.06$ follows the construction of \citet{Mendoza_et_al_1994} and reflects the effective tax rate on private consumption expenditures. The interest income and dividend tax rates $\bar{\tau}^i = 0.25$ and $\bar{\tau}^d = 0.30$ are the sample averages of the interest and qualified dividend marginal tax rates from the McGrattan TAXSIM series; the interest income tax rate stays at this value throughout. The investment tax credit rate $\bar{\tau}^{ic} = 0.02$ and expensing rate $\bar{e}^{\tau} = 0.06$ are sample averages of the \citet{House_Shapiro_2008} ITC series and the BEA asset-weighted bonus depreciation series, respectively. The tax depreciation rate $\delta^{\tau} = 0.025$ equals the economic depreciation rate as a baseline. The dividend share of output $\overline{\text{div}}/\bar{y} = 0.05$ is set to the sample average; the fixed operating cost $\psi$ in the production function is determined residually to hit this target in steady state.
 
 
 \subsubsection{Data}
@@ -418,7 +420,7 @@ Steady-state tax rates are calibrated to the sample averages over the same perio
 
 We use quarterly U.S.\ data from 1961Q1 to 2013Q4. Real per-capita consumption, investment, government purchases, and gross domestic product are constructed from BEA National Income and Product Accounts and the U.S.\ Census population series, then log-linear-detrended and expressed as percent deviations from trend. Real federal debt is the Dallas Fed market-value series (MVPHGFD027MNFRBDAL). Inflation is measured as gross GDP deflator inflation, and the interest rate is the Federal Funds Rate.
 
-Effective tax rates on labor and capital income follow the NIPA-based construction of \cn{Jones2002}, and the consumption tax rate follows \cn{Mendoza_et_al_1994}. The dividend tax rate is taken from the McGrattan TAXSIM series (average marginal rate on qualified dividends), and the interest income tax rate is the corresponding TAXSIM series on interest income. The investment tax credit rate is constructed following \cn{House_Shapiro_2008} as a weighted aggregation of the statutory ITC schedule across equipment types. The expensing rate is the BEA asset-weighted average of statutory bonus depreciation provisions. Sample coverage is dictated by the availability of the TAXSIM series, which begins in 1960 and ends in 2013. All tax rate series are constructed as fractional deviations from their sample means.
+Effective tax rates on labor and capital income follow the NIPA-based construction of \citet{Jones2002}, and the consumption tax rate follows \citet{Mendoza_et_al_1994}. The dividend tax rate is taken from the McGrattan TAXSIM series (average marginal rate on qualified dividends), and the interest income tax rate is the corresponding TAXSIM series on interest income. The investment tax credit rate is constructed following \citet{House_Shapiro_2008} as a weighted aggregation of the statutory ITC schedule across equipment types. The expensing rate is the BEA asset-weighted average of statutory bonus depreciation provisions. Sample coverage is dictated by the availability of the TAXSIM series, which begins in 1960 and ends in 2013. All tax rate series are constructed as fractional deviations from their sample means.
 
 Two features of the data motivate specific modeling choices. First, the 2008Q4 observation of market-value federal debt exhibits a large jump driven by valuation and issuance movements that are not modeled explicitly; the debt residual $\varepsilon_t^b$ in the government budget constraint absorbs this so that the fiscal rules do not reconcile the jump through counterfactual movements in the tax instruments. Second, the ITC rate was inactive for most quarters after 1986 and bonus depreciation was inactive prior to 2001, so both $\tau_t^{ic}$ and $e_t^{\tau}$ take values at or near zero for extended periods of the sample. This is the reason the corresponding fiscal rules use the level-deviation form (equations~\ref{eq:tauicrule} and~\ref{eq:etaurule}) rather than the log-ratio form used for the other tax instruments.
 
@@ -441,7 +443,7 @@ The remaining 49 parameters of the baseline model (36 structural and fiscal-rule
 \end{enumerate}
 Transfer payments $x_t$ are excluded from the observable set because the 2008--2010 ARRA stimulus produced outliers of a magnitude the linearized model cannot fit; without this exclusion, the transfer shock variance inflates and distorts other fiscal-rule estimates. The interest income tax rate $\tau_t^i$ is also excluded because it has a 0.77 correlation with the dividend tax rate at the quarterly frequency, both being constructed from the same TAXSIM series; including both induces collinearity in the measurement equations. Since it is not observed, the interest income tax rate is held constant (Section~\ref{sec:govt}). The transfer shock $\varepsilon_t^{x}$ is retained as an unobserved structural shock identified through cross-equation restrictions. Together with the debt-residual shock $\varepsilon_t^b$, the model has 13 structural shocks and 12 observables. Observed data are demeaned prior to estimation (\texttt{prefilter = 1}) to accommodate potential mismatches between model steady states and sample means.
 
-Table~\ref{tab:priors} reports the prior distributions and posterior estimates of the baseline model. Prior choices follow \cn{Zubairy2014} for the parameters common to both models. The deep habit parameters $b_c$ and $\theta^g$ receive Beta priors. The risk aversion coefficient $\gamma$, the investment adjustment cost $\kappa$, and the price adjustment cost $\alpha_P$ receive Normal priors. The persistence parameters of the fiscal rules and exogenous processes receive Beta$(0.7, 0.2)$ priors, except for government purchases, whose prior mean is 0.8. The debt-feedback coefficients of the capital, labor, consumption, and dividend tax rules and of the spending and transfer rules receive Gamma$(0.5, 0.25)$ priors, so that taxes rise and spending and transfers fall when debt is above steady state; for the investment tax credit and the expensing rate, whose direction of response to debt is not obvious, the prior is Normal$(0, 0.25)$. Output-feedback coefficients follow \cn{Zubairy2014} for government purchases, transfers, and the capital and labor taxes, and receive Normal$(0, 0.1)$ priors for the other instruments. All shock standard deviations receive inverse-Gamma priors. The twelve fiscal-rule parameters for the consumption tax, dividend tax, investment tax credit, and expensing rate, and the four corresponding shock standard deviations, as well as the standard deviation of the debt residual, are new to this paper.
+Table~\ref{tab:priors} reports the prior distributions and posterior estimates of the baseline model. Prior choices follow \citet{Zubairy2014} for the parameters common to both models. The deep habit parameters $b_c$ and $\theta^g$ receive Beta priors. The risk aversion coefficient $\gamma$, the investment adjustment cost $\kappa$, and the price adjustment cost $\alpha_P$ receive Normal priors. The persistence parameters of the fiscal rules and exogenous processes receive Beta$(0.7, 0.2)$ priors, except for government purchases, whose prior mean is 0.8. The debt-feedback coefficients of the capital, labor, consumption, and dividend tax rules and of the spending and transfer rules receive Gamma$(0.5, 0.25)$ priors, so that taxes rise and spending and transfers fall when debt is above steady state; for the investment tax credit and the expensing rate, whose direction of response to debt is not obvious, the prior is Normal$(0, 0.25)$. Output-feedback coefficients follow \citet{Zubairy2014} for government purchases, transfers, and the capital and labor taxes, and receive Normal$(0, 0.1)$ priors for the other instruments. All shock standard deviations receive inverse-Gamma priors. The twelve fiscal-rule parameters for the consumption tax, dividend tax, investment tax credit, and expensing rate, and the four corresponding shock standard deviations, as well as the standard deviation of the debt residual, are new to this paper.
 
 
 \section{Results}
@@ -455,6 +457,8 @@ M_j(H) = s_j\,\frac{\sum_{t=0}^{H-1} \bar{R}^{-t}\,\Delta y_t^{(j)}}{\sum_{t=0}^
 \end{equation}
 where $\Delta y_t^{(j)}$ and $\Delta Rev_{j,t}^{(j)}$ are the responses of output and of instrument $j$'s own revenue $t$ quarters after a shock $\varepsilon^j$, $\bar{R}$ is the steady-state gross nominal interest rate, and $H = 1$ is the impact quarter. $Rev_{j,t}$ is the component of $taxrev_t$ in equation \eqref{eq:taxrev} collected by instrument $j$: consumption tax revenue $\tau_t^c c_t$, labor income tax revenue $\tau_t^w w_t h_t$, and capital income tax revenue for the capital tax. For the expensing rate, it is the net cost of the additional deductions relative to keeping expensing at its steady-state rate on the same investment path, $\tau_t^k\bigl[(e_t^{\tau}-\bar{e}^{\tau})i_t + \delta^{\tau}B_{t-1}\bigr]$, where $B_t = (1-\delta^{\tau})B_{t-1} - (e_t^{\tau}-\bar{e}^{\tau})i_t$ is the resulting change in the tax basis. The first term is the deduction taken immediately; the second, negative after an increase in expensing, is the revenue recovered later through smaller depreciation deductions. In the model with the capital-goods friction, $P^I_t i_t$ replaces $i_t$. For the investment tax credit, it is the outlay $\tau_t^{ic} i_t$; and for government purchases, it is $g_t$. The sign $s_j$ is chosen so that the multiplier is positive when output moves in the expansionary direction of the policy, a tax cut or an increase in spending, the credit, or expensing. Because the model is solved to first order, the multiplier does not depend on the size of the shock.
 
+We apply a reporting convention for self-financing tax cuts and investment incentives: if discounted cumulative output rises and discounted cumulative total tax revenue does not fall, we report the multiplier as $+\infty$. This convention applies to every tax normalization, including own-revenue multipliers, and is evaluated separately for each posterior draw and horizon before computing medians and percentile intervals. Other cases retain the ratio in equation~\eqref{eq:mult_main}. Spending and transfers are exempt from this convention.
+
 In the capital tax experiment we set the coefficient $\phi$ on $\varepsilon_t^k$ in the labor tax rule \eqref{eq:taukwrule} to zero, so that a capital tax shock does not also move the labor tax rate on impact and the experiment changes a single instrument. This affects only the simulation, not the estimation.
 
 We use the instrument's own revenue rather than total tax revenue as the denominator for two reasons. First, the instruments differ greatly in the size of their bases, and the own-revenue denominator measures output per dollar of the instrument's direct fiscal cost, which is closer to how such policies are scored. Second, under fiscal rules in which every tax responds to debt and output, the change in total tax revenue includes the responses of all the other instruments, and for the capital tax and the investment tax credit its present value changes sign within the first five years, so the total-revenue multiplier becomes very large and changes sign at the horizon where its denominator passes through zero. A total-revenue denominator is therefore not informative in our baseline model, although for government spending it gives the same values as ours by construction.
@@ -466,9 +470,9 @@ We do not report multipliers for lump-sum transfers or the dividend tax. In this
 
 \subsection{Short-Run Multipliers}
 
-Table~\ref{tab:mult_main} reports the multipliers of the baseline model at horizons of 1, 4, 12, and 20 quarters. Panel A gives our estimates for the six instruments, and Panel B reproduces the corresponding values from \cn{Zubairy2014}, Table 2.
+Table~\ref{tab:mult_main} reports the multipliers of the baseline model at horizons of 1, 4, 12, and 20 quarters. Panel A gives our estimates for the six instruments, and Panel B reproduces the corresponding values from \citet{Zubairy2014}, Table 2.
 
-On impact, government spending has the largest multiplier, 1.12, close to the 1.07 in \cn{Zubairy2014}. The capital income tax follows at 1.35 per dollar of capital tax revenue, and the investment tax credit at 0.76. The labor tax (0.32) and the consumption tax (0.27) have similar and much smaller impact multipliers, and the expensing rate has the smallest, 0.20. Our tax multipliers are larger than those in Panel B, but the two are not directly comparable, since her denominator is the change in total tax revenue and the two models differ in their tax instruments and calibration.
+On impact, government spending has the largest multiplier, 1.12, close to the 1.07 in \citet{Zubairy2014}. The capital income tax follows at 1.35 per dollar of capital tax revenue, and the investment tax credit at 0.76. The labor tax (0.32) and the consumption tax (0.27) have similar and much smaller impact multipliers, and the expensing rate has the smallest, 0.20. Our tax multipliers are larger than those in Panel B, but the two are not directly comparable, since her denominator is the change in total tax revenue and the two models differ in their tax instruments and calibration.
 
 Within the first year the ranking changes. By four quarters the capital tax multiplier has reached 2.13 and the investment tax credit 1.54, both above the spending multiplier of 1.04. The labor tax multiplier rises to 0.62, and the consumption tax and expensing multipliers to 0.39 and 0.37. The instruments that act directly on the cost of capital, the capital income tax and the investment tax credit, therefore appear to be the most effective per dollar of forgone revenue at all horizons beyond the impact quarter.
 
@@ -507,25 +511,25 @@ The capital tax multiplier is the least sensitive to the fiscal rules: it is bet
 
 Comparing the separately estimated models with and without it, the capital-goods friction of Section~\ref{sec:kgoods} lowers the multipliers of the investment incentives the most. Under the baseline rules it lowers the investment tax credit multiplier from 2.23 to 1.68 at twelve quarters, about one quarter, and the expensing multiplier from 0.17 to 0.07 (Table~\ref{tab:mult_compare}). Under AR(1) rules it lowers the investment tax credit multiplier from 1.43 to 1.19. The labor tax multiplier falls by about 15 percent, the capital tax multiplier by about five percent, and the spending multiplier is slightly higher with the friction.
 
-The friction works through incidence rather than through the fiscal cost. Comparing the friction model under the baseline rules with the same model at $\epsilon_K = \infty$, on the same posterior draws, the present value of the revenue cost of the investment tax credit changes by less than four percent at every horizon, while the present value of its output response is 15 to 40 percent lower. A temporary subsidy to investment raises the price of capital goods, so part of it is captured by the capital-goods sector instead of raising the quantity of investment, as \cn{House_Shapiro_2008} find for bonus depreciation. Table~\ref{tab:sens} shows that the effect shrinks as the supply elasticity rises toward the range estimated by \cn{House_Shapiro_2008}: at $\epsilon_K = 9$ the investment tax credit multiplier at twelve quarters is 2.13. The estimates for the two models with the friction are in Table~\ref{tab:mult_alt}.
+The friction works through incidence rather than through the fiscal cost. Comparing the friction model under the baseline rules with the same model at $\epsilon_K = \infty$, on the same posterior draws, the present value of the revenue cost of the investment tax credit changes by less than four percent at every horizon, while the present value of its output response is 15 to 40 percent lower. A temporary subsidy to investment raises the price of capital goods, so part of it is captured by the capital-goods sector instead of raising the quantity of investment, as \citet{House_Shapiro_2008} find for bonus depreciation. Table~\ref{tab:sens} shows that the effect shrinks as the supply elasticity rises toward the range estimated by \citet{House_Shapiro_2008}: at $\epsilon_K = 9$ the investment tax credit multiplier at twelve quarters is 2.13. The estimates for the two models with the friction are in Table~\ref{tab:mult_alt}.
 
 \section{Estimates for the United Kingdom}
 \label{sec:uk}
 
 We also estimate the model with AR(1) fiscal rules on UK data for 1997Q2--2016Q4. Fewer UK tax series are available, so the UK model has nine observables, no investment tax credit, and steady-state expensing, interest, and dividend tax rates set at their U.S.\ values (Appendix~\ref{app:uk}). The UK multipliers are broadly similar to the U.S.\ estimates under the same fiscal rules (Table~\ref{tab:mult_uk} and Figure~\ref{fig:mult_uk}). At twelve quarters the spending multiplier is 0.68 against 0.70 in the United States, the labor tax 0.61 against 0.72, the capital tax 2.48 against 2.82, and the consumption tax 0.38 against 0.34. The consumption tax multiplier is larger on impact in the United Kingdom, 0.30 against 0.17. The expensing multiplier is more than twice as large, 0.73 against 0.32, which may partly reflect the higher UK capital tax rate, but it also rests on the U.S.\ steady-state expensing rate and should be read with caution.
 
-\section{Sensitivity to Monetary Policy}
+% \section{Sensitivity to Monetary Policy}
 
-Talk about multipliers at and away from the zero-bound.  What happens if hold interest rates constant?
+% Talk about multipliers at and away from the zero-bound.  What happens if hold interest rates constant?
 
-\section{Dead-weight Loss and Fiscal Policy}
+% \section{Dead-weight Loss and Fiscal Policy}
 
-\begin{enumerate}
-\item TABLE: table of DWL for each of policy responses
-\item FIGURE: graph of DWL over time for policy response
-\end{enumerate}
+% \begin{enumerate}
+% \item TABLE: table of DWL for each of policy responses
+% \item FIGURE: graph of DWL over time for policy response
+% \end{enumerate}
 
-Do some revenue neutral changes in tax policy and calculate welfare....
+% Do some revenue neutral changes in tax policy and calculate welfare....
 
 \section{Sensitivity to Calibrated Parameters}
 \label{sec:sens_params}
@@ -534,24 +538,26 @@ Table~\ref{tab:sens} reports how the multipliers change with the calibrated para
 
 The capital tax multiplier depends on the curvature of the utilization cost. At twelve quarters it is 3.33 with $\sigma_u = 2.0$, 2.82 at the baseline value of 2.5, and 2.46 with $\sigma_u = 3.0$. A flatter utilization cost lets firms raise capital services quickly when the after-tax return to capital rises, which seems to be why the capital tax multiplier is large on impact. The spending multiplier depends on the depth of the government consumption habit: at twelve quarters it is 0.31 with $b_g = 0.55$, 0.42 at the baseline value of 0.70, and 0.70 with $b_g = 0.85$. In both cases the ranking of the instruments is unchanged.
 
-Panel B reports the multipliers of the model with the capital-goods friction as the supply elasticity $\epsilon_K$ rises from the baseline value of 4 through the range of 6 to 14 estimated by \cn{House_Shapiro_2008}, and with the friction switched off. The investment tax credit multiplier at twelve quarters rises from 1.68 to 2.29 at $\epsilon_K = 14$ and 2.63 without the friction. Every multiplier rises with $\epsilon_K$, so the friction is not specific to purchase subsidies: over the same range the labor tax multiplier rises from 0.55 to 0.94, the capital tax multiplier from 2.69 to 3.22, and the spending multiplier from 0.50 to 0.65. These values at $\epsilon_K = \infty$ differ from the estimates of the baseline model because they use the posterior of the friction model.
+Panel B reports the multipliers of the model with the capital-goods friction as the supply elasticity $\epsilon_K$ rises from the baseline value of 4 through the range of 6 to 14 estimated by \citet{House_Shapiro_2008}, and with the friction switched off. The investment tax credit multiplier at twelve quarters rises from 1.68 to 2.29 at $\epsilon_K = 14$ and 2.63 without the friction. Every multiplier rises with $\epsilon_K$, so the friction is not specific to purchase subsidies: over the same range the labor tax multiplier rises from 0.55 to 0.94, the capital tax multiplier from 2.69 to 3.22, and the spending multiplier from 0.50 to 0.65. These values at $\epsilon_K = \infty$ differ from the estimates of the baseline model because they use the posterior of the friction model.
 
 
-\section{Discussion}
+% \section{Discussion}
 
-Note that hard to know preferences for gov't spending, but imagine that people know better what want, cutting taxes may be politically easier than increasing spending.  Note other weaknesses of the modeling assumptions.
+% Note that hard to know preferences for gov't spending, but imagine that people know better what want, cutting taxes may be politically easier than increasing spending.  Note other weaknesses of the modeling assumptions.
 
-If consumption taxes are useful stabilization tool, and not just a tool for more revenue, countries like the US that don't have them should consider implementing them.  This is especially true if the zero bound is a concern, since consumption tax cuts can be effective even when interest rates are at the zero bound.  Just like a non-zero inflation target can help give monetary policy more room to maneuver, a non-zero consumption tax can give fiscal policy more room to maneuver.
+% If consumption taxes are useful stabilization tool, and not just a tool for more revenue, countries like the US that don't have them should consider implementing them.  This is especially true if the zero bound is a concern, since consumption tax cuts can be effective even when interest rates are at the zero bound.  Just like a non-zero inflation target can help give monetary policy more room to maneuver, a non-zero consumption tax can give fiscal policy more room to maneuver.
 
 \section{Conclusion}
 \label{sec:conclusion}
+
+TBD
 
 
 % \section{Questions:}
 % \begin{enumerate}
 % \item Do those with models of the multiplier usually have transfers to households or gov't actually buying stuff?
 % \item Did Europe (or even US states) have any changes to consumption taxes in response to the recession? \emph{A: I don't think so.  In fact, I believe some states cancelled their sales tax holidays due to budget shortfalls.}
-% \item Why do \cn{CER2010} have a subsidy to correct for monopoly of int goods producers?  I don't see others with this.
+% \item Why do \citet{CER2010} have a subsidy to correct for monopoly of int goods producers?  I don't see others with this.
 % \end{enumerate}
 
 \newpage
